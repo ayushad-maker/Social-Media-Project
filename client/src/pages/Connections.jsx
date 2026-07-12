@@ -85,8 +85,43 @@ const Connections = () => {
                 <div className="flex-1">
                   <p className="font-medium text-slate-700">{user.full_name}</p>
                   <p className="text-slate-500">@{user.username}</p>
-                  <p className="text-sm text-gray-600">{user.bio.slice(0, 30)}...</p>
-                  <div className="flex max-sm:flex-col gap-2 mt-4">{<button onClick={()=>navigate(`/profile/${user._id}`)} className="w-full p-2 text-sm rounded-md bg-linear-to-r from-indigo-500 to-purple-300 hover:to-purple-700 active:scale-95 transition text-white cursor-pointer ">View Profile</button>}</div>
+                  <p className="text-sm text-gray-600">
+                    {user.bio.slice(0, 30)}...
+                  </p>
+                  <div className="flex max-sm:flex-col gap-2 mt-4">
+                    {
+                      <button
+                        onClick={() => navigate(`/profile/${user._id}`)}
+                        className="w-full p-2 text-sm rounded-md bg-linear-to-r from-indigo-500 to-purple-300 hover:to-purple-700 active:scale-95 transition text-white cursor-pointer "
+                      >
+                        View Profile
+                      </button>
+                    }
+                    {currentTab === "followers" && (
+                      <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer">
+                        Follow
+                      </button>
+                    )}
+                    {currentTab === "Pending" && (
+                      <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer">
+                        Accept
+                      </button>
+                    )}
+                    {currentTab === "following" && (
+                      <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer">
+                        Unfollow
+                      </button>
+                    )}
+                    {
+                      currentTab === "Connections" && (
+                        <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer flex items-center justify-center gap-2">
+                          <MessageSquare/>
+                          Message
+                        </button>
+                      ) 
+                    }
+
+                  </div>
                 </div>
               </div>
             ))}
