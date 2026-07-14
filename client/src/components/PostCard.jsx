@@ -19,7 +19,7 @@ const PostCard = ({ post }) => {
   return (
     <div onClick={()=>navigate('/profile/' + post._id)} className="bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl">
       {/* User Info */}
-      <div className="inline-flex items-center gap-3 cursor-pointer">
+      <div className="inline-flex items-center gap-3 cursor-pointer ">
         <img
           src={post.user.profile_picture}
           alt=""
