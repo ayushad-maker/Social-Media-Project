@@ -1,7 +1,12 @@
 import { Calendar, MapPin, PenBox, Verified } from "lucide-react";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
+import ProfileModal from "./ProfileModal";
 
 const UserProfile = ({ users, posts, profileId, setShowEdit }) => {
+
+    const navigate = useNavigate();
+
   return (
     <div className="relative py-4 px-6 md:px-8 bg-white ">
       <div className="flex flex-col md:flex-row items-start gap-6">
@@ -30,7 +35,10 @@ const UserProfile = ({ users, posts, profileId, setShowEdit }) => {
             {!profileId && (
               <button
                 className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg font-medium transition-colors mt-4 md:mt-0 cursor-pointer hover:scale-105"
-                onClick={() => setShowEdit(true)}
+                onClick={() => {
+                  setShowEdit(true);
+  
+                }}
               >
                 <PenBox className="w-4 h-4" />
                 Edit{" "}
