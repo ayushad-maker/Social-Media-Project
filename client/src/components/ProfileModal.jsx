@@ -2,7 +2,7 @@ import { useState } from "react";
 import { dummyUserData } from "../assets/assets";
 import { Pencil } from "lucide-react";
 
-const ProfileModal = () => {
+const ProfileModal = ({ setShowEdit }) => {
   const user = dummyUserData;
   const [editForm, setEditForm] = useState({
     username: user.username,
@@ -10,6 +10,7 @@ const ProfileModal = () => {
     location: user.location,
     profile_picture: null,
     full_name: user.full_name,
+    cover_photo: null,
   });
 
   const handleSaveProfile = async (e) => {
@@ -60,6 +61,113 @@ const ProfileModal = () => {
                   </div>
                 </div>
               </label>
+            </div>
+
+            {/* Cover Photo */}
+            <div className="">
+              <label htmlFor="cover_photo">
+                Cover Photo
+                <input
+                  hidden
+                  type="file"
+                  className="w-full p-3 border border-gray-200 rounded-lg"
+                  id="cover_photo"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, cover_photo: e.target.files[0] })
+                  }
+                />
+                <div className="group/cover relative w-fit">
+                  <img
+                    src={
+                      editForm.cover_photo
+                        ? URL.createObjectURL(editForm.cover_photo)
+                        : user.cover_photo
+                    }
+                    alt=""
+                    className="w-80 h-40 rounded-lg bg-linear-to-r from-indigo-200 via-purple-200 to-pink-200 object-cover mt-2"
+                  />
+                  <div className="absolute hidden group-hover/cover:flex top-0 left-0 right-0 bottom-0 bg-black/20 rounded-lg items-center justify-center">
+                    <Pencil className=" h-5 text-white" />
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+                <input
+                  type="text"
+                  className="w-full p-3 border border-gray-200 rounded-lg mt-2"
+                  placeholder="please enter your name"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, full_name: e.target.value })
+                  }
+                  value={editForm.full_name}
+                />
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Username
+                <input
+                  type="text"
+                  className="w-full p-3 border border-gray-200 rounded-lg mt-2"
+                  placeholder="please enter your username"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, username: e.target.value })
+                  }
+                  value={editForm.username}
+                />
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+              </label>
+              <textarea
+                rows={3}
+                className="w-full p-3 border border-gray-200 rounded-lg mt-2"
+                onChange={(e) =>
+                  setEditForm({ ...editForm, bio: e.target.value })
+                }
+                value={editForm.bio}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Location
+              </label>
+              <textarea
+                rows={3}
+                className="w-full p-3 border border-gray-200 rounded-lg mt-2 h-15"
+                placeholder="please enter your location"
+                onChange={(e) =>
+                  setEditForm({ ...editForm, location: e.target.value })
+                }
+                value={editForm.location}
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-6">
+              <button
+                onClick={() => setShowEdit(false)}
+                type="button"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-300 transition-colors cursor-po"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="Submit"
+                className="px-4 py-2 rounded-md flex justify-center items-center gap-2 bg-linear-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 active:scale-95 transition text-white cursor-pointer"
+              >
+                Save Changes
+              </button>
             </div>
           </form>
         </div>
