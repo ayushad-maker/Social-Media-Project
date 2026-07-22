@@ -47,6 +47,7 @@ const PostCard = ({ post }) => {
       <div className="gird grid-cols-2 gap-2">
         {post.image_urls.map((img, index) => (
           <img
+            key={index}
             src={img}
             alt=""
             className={`w-full h-48 object-cover rounded-lg ${post.image_urls.length === 1 && "col-span-2 h-auto"}`}

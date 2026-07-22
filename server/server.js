@@ -6,12 +6,9 @@ import { clerkMiddleware } from '@clerk/express'
 
 import { inngest, functions } from "./inngest/index.js";
 import { serve } from "inngest/express";
+import userRouter from "./routes/userRoutes.js";
+import User from "./models/user.js";
 
-// Import your routes
-// import userRoutes from "./routes/userRoutes.js";
-
-// Import Clerk only if you use it
-// import { clerkMiddleware } from "@clerk/express";
 
 dotenv.config();
 
@@ -35,6 +32,21 @@ app.use(
     functions,
   })
 );
+app.use("/api/user", userRouter);
+app.get("/create-test-user", async (req, res) => {
+  try {
+    const user = await User.create({
+      _id: "test123",
+      email: "test@test.com",
+      full_name: "Test User",
+      username: "testuser",
+    });
+
+    res.json(user);
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
 
 // 👇 Apply Clerk AFTER the Inngest route
 // app.use(clerkMiddleware());

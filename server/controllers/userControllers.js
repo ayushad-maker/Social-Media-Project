@@ -1,5 +1,6 @@
 import fs from "fs";
 import User from "../models/user.js";
+import { imageKit } from "../config/imagekit.js";
 
 //get User data
 export const getUserData = async (req, res) => {
@@ -22,14 +23,14 @@ export const getUserData = async (req, res) => {
 export const getUpdatedUserData = async (req, res) => {
   try {
     const { userId } = await req.auth();
-    const { username, bio, location, full_name } = req.body;
+    let { username, bio, location, full_name } = req.body;
 
     const tempUser = await User.findById(userId);
 
     !username && (username = tempUser.username);
 
     if (tempUser.username !== username) {
-      const user = User.findOne({ username });
+      const user = await User.findOne({ username });
       if (user) {
         // we will not change the username if it is already taken
         username = tempUser.username;
@@ -47,7 +48,9 @@ export const getUpdatedUserData = async (req, res) => {
     const cover = req.files.cover && req.files.cover[0];
 
     if (profile) {
-      const buffer = fs.readFileSync(profile.path);
+      const buffer = fs.readFileSync(
+        profile.buffer ? profile.buffer : profile.path,
+      );
       const response = await imageKit.upload({
         file: buffer,
         fileName: profile.originalname,
@@ -104,10 +107,10 @@ export const discoveryUsers = async (req, res) => {
 
     const allUsers = await User.find({
       $or: [
-        { username: new RegExp(input, i) },
-        { email: new RegExp(input, i) },
-        { full_name: new RegExp(input, i) },
-        { location: new RegExp(input, i) },
+        { username: new RegExp(input, "i") },
+        { email: new RegExp(input, "i") },
+        { full_name: new RegExp(input, "i") },
+        { location: new RegExp(input, "i") },
       ],
     });
 
@@ -136,7 +139,7 @@ export const followUser = async (req, res) => {
 
     const toUser = await User.findById(id);
     toUser.followers.push(userId);
-    await User.save();
+    await toUser.save();
 
     return res.json({
       success: true,
@@ -170,8 +173,3 @@ export const UnfollowUser = async (req, res) => {
     return res.json({ success: false, message: error.message });
   }
 };
-
-
-
-
-
