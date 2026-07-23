@@ -1,10 +1,13 @@
 import express from "express";
 import { protect } from "../middleware/auth.js";
 import {
+  acceptConnectionRequest,
   discoveryUsers,
   followUser,
   getUpdatedUserData,
+  getUserConnections,
   getUserData,
+  sendConnectionsRequest,
   UnfollowUser,
 } from "../controllers/userControllers.js";
 import { upload } from "../config/multer.js";
@@ -24,5 +27,8 @@ userRouter.post(
   getUpdatedUserData,
 );
 userRouter.post("/discover", protect, discoveryUsers);
+userRouter.get("/connections", protect, getUserConnections);
+userRouter.post("/connect", protect, sendConnectionsRequest);
+userRouter.post('"/accept', protect, acceptConnectionRequest);
 
 export default userRouter;

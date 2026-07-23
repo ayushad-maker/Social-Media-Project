@@ -220,6 +220,7 @@ export const UnfollowUser = async (req, res) => {
   }
 };
 
+
 //connections request
 
 export const sendConnectionsRequest = async (req, res) => {
@@ -279,7 +280,6 @@ export const sendConnectionsRequest = async (req, res) => {
 export const getUserConnections = async (req, res) => {
   try {
     const { userId } = req.auth();
-    const { id } = req.body;
 
     const user = await Connection.findById(userId).populate(
       "connections followers following",
@@ -302,6 +302,38 @@ export const getUserConnections = async (req, res) => {
       following,
       pendingConnections,
     });
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: error.message });
+  }
+};
+
+export const acceptConnectionRequest = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const { id } = req.body;
+
+    const connection = await User.findById({
+      from_user_id: userId,
+      to_user_id: id,
+    });
+
+    if (!connection) {
+      return res.json({ success: false, message: "no connection is found!." });
+    }
+
+    const user = await User.findById({ userId });
+    user.connections.push(id);
+    user.save();
+
+    const toUser = await User.findById({ id });
+    toUser.connections.push(userId);
+    toUser.save();
+
+    connection.status = "accepted";
+    connection.save();
+
+    return res.json({success:true,message:"connection accepted successfully."})
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
