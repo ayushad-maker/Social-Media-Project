@@ -1,8 +1,10 @@
 import "dotenv/config";
-import ImageKit from "@imagekit/nodejs";
+import ImageKit from "imagekit";
 
-export const imageKit = new ImageKit({
+const imageKit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
 });
+
+export default imageKit;
