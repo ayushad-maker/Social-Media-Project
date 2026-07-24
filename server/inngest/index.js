@@ -1,6 +1,7 @@
 import { Inngest } from "inngest";
 import User from "../models/user.js";
 import Connection from "../models/Connections.js";
+import sendEmail from "../config/nodeMailer.js";
 
 export const inngest = new Inngest({
   id: "pingup-app",
@@ -91,86 +92,92 @@ const sendNewConnectionsRequestReminder = inngest.createFunction(
   async ({ event, step }) => {
     const { connectionId } = event.data;
 
+    // Send initial email
     await step.run("send-connection-request-mail", async () => {
       const connection = await Connection.findById(connectionId).populate(
-        "from_user_id to_user_id",
+        "from_user_id to_user_id"
       );
+
+      if (!connection) return;
 
       const subject = "👋 New Connection Request";
 
       const body = `
-<div style="font-family: Arial, sans-serif; padding: 20px;">
-  <h2>Hi ${connection.to_user_id.full_name},</h2>
+      <div style="font-family: Arial, sans-serif; padding:20px;">
+        <h2>Hi ${connection.to_user_id.full_name},</h2>
 
-  <p>
-    You have a new connection request from
-    ${connection.from_user_id.full_name} - @${connection.from_user_id.username}
-  </p>
+        <p>
+          You have a new connection request from
+          <strong>${connection.from_user_id.full_name}</strong>
+          (@${connection.from_user_id.username})
+        </p>
 
-  <p>
-    Click
-    <a
-      href="${process.env.FRONTEND_URL}/connections"
-      style="color:#10b981;"
-    >
-      here
-    </a>
-    to accept or reject the request.
-  </p>
+        <p>
+          <a href="${process.env.FRONTEND_URL}/connections">
+            Click here
+          </a>
+          to accept or reject the request.
+        </p>
 
-  <br />
+        <p>Thanks,<br/>PingUp Team</p>
+      </div>
+      `;
 
-  <p>
-    Thanks,<br />
-    PingUp - Stay Connected
-  </p>
-</div>
-`;
+      await sendEmail(
+        connection.to_user_id.email,
+        subject,
+        body
+      );
     });
 
-    const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await step.sleepUntil("wait-for-24-hours", in24Hours);
-    await step.run("send-connection-request-remainder", async () => {
+    // Wait 24 hours
+    await step.sleepUntil(
+      "wait-for-24-hours",
+      new Date(Date.now() + 24 * 60 * 60 * 1000)
+    );
+
+    // Reminder email
+    await step.run("send-connection-request-reminder", async () => {
       const connection = await Connection.findById(connectionId).populate(
-        "from_user_id to_user_id",
+        "from_user_id to_user_id"
       );
+
+      if (!connection) return;
 
       if (connection.status === "accepted") {
-        return { message: "Already accepted." };
+        return;
       }
 
-      const subject = "👋 New Connection Request";
+      const subject = "⏰ Reminder: Pending Connection Request";
 
       const body = `
-<div style="font-family: Arial, sans-serif; padding: 20px;">
-  <h2>Hi ${connection.to_user_id.full_name},</h2>
+      <div style="font-family: Arial, sans-serif; padding:20px;">
+        <h2>Hi ${connection.to_user_id.full_name},</h2>
 
-  <p>
-    You have a new connection request from
-    ${connection.from_user_id.full_name} - @${connection.from_user_id.username}
-  </p>
+        <p>
+          You still have a pending connection request from
+          <strong>${connection.from_user_id.full_name}</strong>
+          (@${connection.from_user_id.username}).
+        </p>
 
-  <p>
-    Click
-    <a
-      href="${process.env.FRONTEND_URL}/connections"
-      style="color:#10b981;"
-    >
-      here
-    </a>
-    to accept or reject the request.
-  </p>
+        <p>
+          <a href="${process.env.FRONTEND_URL}/connections">
+            Click here
+          </a>
+          to respond.
+        </p>
 
-  <br />
+        <p>Thanks,<br/>PingUp Team</p>
+      </div>
+      `;
 
-  <p>
-    Thanks,<br />
-    PingUp - Stay Connected
-  </p>
-</div>
-`;
+      await sendEmail(
+        connection.to_user_id.email,
+        subject,
+        body
+      );
     });
-  },
+  }
 );
 
 export const functions = [syncUserCreation, syncUserUpdation, syncUserDeletion,sendNewConnectionsRequestReminder];
