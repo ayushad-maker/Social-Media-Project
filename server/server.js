@@ -2,13 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
-import { clerkMiddleware } from '@clerk/express'
+import { clerkMiddleware } from "@clerk/express";
 
 import { inngest, functions } from "./inngest/index.js";
 import { serve } from "inngest/express";
 import userRouter from "./routes/userRoutes.js";
-import User from "./models/user.js";
-
+import User from "./models/User.js";
+import postRouter from "./routes/postRoutes.js";
 
 dotenv.config();
 
@@ -18,21 +18,21 @@ await connectDB();
 
 app.use(cors());
 app.use(express.json());
-app.use(clerkMiddleware()); // Apply Clerk middleware globally
+app.use(clerkMiddleware());
 
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-// ✅ Make Inngest PUBLIC
 app.use(
   "/api/inngest",
   serve({
     client: inngest,
     functions,
-  })
+  }),
 );
 app.use("/api/user", userRouter);
+app.use("/api/post", postRouter);
 app.get("/create-test-user", async (req, res) => {
   try {
     const user = await User.create({
@@ -47,12 +47,6 @@ app.get("/create-test-user", async (req, res) => {
     res.json({ error: err.message });
   }
 });
-
-// 👇 Apply Clerk AFTER the Inngest route
-// app.use(clerkMiddleware());
-
-// Your API routes
-// app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 

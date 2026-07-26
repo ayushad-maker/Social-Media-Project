@@ -1,5 +1,5 @@
 import { Inngest } from "inngest";
-import User from "../models/user.js";
+import User from "../models/User.js";
 import Connection from "../models/Connections.js";
 import sendEmail from "../config/nodeMailer.js";
 
@@ -95,7 +95,7 @@ const sendNewConnectionsRequestReminder = inngest.createFunction(
     // Send initial email
     await step.run("send-connection-request-mail", async () => {
       const connection = await Connection.findById(connectionId).populate(
-        "from_user_id to_user_id"
+        "from_user_id to_user_id",
       );
 
       if (!connection) return;
@@ -123,23 +123,19 @@ const sendNewConnectionsRequestReminder = inngest.createFunction(
       </div>
       `;
 
-      await sendEmail(
-        connection.to_user_id.email,
-        subject,
-        body
-      );
+      await sendEmail(connection.to_user_id.email, subject, body);
     });
 
     // Wait 24 hours
     await step.sleepUntil(
       "wait-for-24-hours",
-      new Date(Date.now() + 24 * 60 * 60 * 1000)
+      new Date(Date.now() + 24 * 60 * 60 * 1000),
     );
 
     // Reminder email
     await step.run("send-connection-request-reminder", async () => {
       const connection = await Connection.findById(connectionId).populate(
-        "from_user_id to_user_id"
+        "from_user_id to_user_id",
       );
 
       if (!connection) return;
@@ -171,13 +167,14 @@ const sendNewConnectionsRequestReminder = inngest.createFunction(
       </div>
       `;
 
-      await sendEmail(
-        connection.to_user_id.email,
-        subject,
-        body
-      );
+      await sendEmail(connection.to_user_id.email, subject, body);
     });
-  }
+  },
 );
 
-export const functions = [syncUserCreation, syncUserUpdation, syncUserDeletion,sendNewConnectionsRequestReminder];
+export const functions = [
+  syncUserCreation,
+  syncUserUpdation,
+  syncUserDeletion,
+  sendNewConnectionsRequestReminder,
+];

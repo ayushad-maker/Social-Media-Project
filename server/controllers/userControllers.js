@@ -1,7 +1,8 @@
 import fs from "fs";
-import User from "../models/user.js";
+import User from "../models/User.js";
 import imageKit from "../config/imageKit.js";
 import Connection from "../models/Connections.js";
+import Post from "../models/Post.js";
 
 //get User data
 export const getUserData = async (req, res) => {
@@ -220,7 +221,6 @@ export const UnfollowUser = async (req, res) => {
   }
 };
 
-
 //connections request
 
 export const sendConnectionsRequest = async (req, res) => {
@@ -333,9 +333,40 @@ export const acceptConnectionRequest = async (req, res) => {
     connection.status = "accepted";
     connection.save();
 
-    return res.json({success:true,message:"connection accepted successfully."})
+    return res.json({
+      success: true,
+      message: "connection accepted successfully.",
+    });
   } catch (error) {
     console.log(error);
     return res.json({ success: false, message: error.message });
   }
 };
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const { profileId } = req.body;
+    const profile = await User.findById(profileId);
+    if (!profileId) {
+      return res.json({
+        success: false,
+        status: 400,
+        message: "Profile is not Found.",
+      });
+    }
+
+    const posts = await Post.find({ user: profileId }).populate("user");
+
+    return res.json({
+      success: true,
+      status: 200,
+      posts,
+      profile,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, status: 400, message: error.message });
+  }
+};
+
+

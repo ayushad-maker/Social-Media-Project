@@ -7,6 +7,7 @@ import {
   getUpdatedUserData,
   getUserConnections,
   getUserData,
+  getUserProfile,
   sendConnectionsRequest,
   UnfollowUser,
 } from "../controllers/userControllers.js";
@@ -30,5 +31,6 @@ userRouter.post("/discover", protect, discoveryUsers);
 userRouter.get("/connections", protect, getUserConnections);
 userRouter.post("/connect", protect, sendConnectionsRequest);
 userRouter.post('"/accept', protect, acceptConnectionRequest);
+userRouter.post("/profiles",getUserProfile);
 
 export default userRouter;
