@@ -9,6 +9,7 @@ import { serve } from "inngest/express";
 import userRouter from "./routes/userRoutes.js";
 import User from "./models/User.js";
 import postRouter from "./routes/postRoutes.js";
+import StoryRouter from "./routes/storyRoutes.js";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use(
 );
 app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
+app.use("/api/stories",StoryRouter)
 app.get("/create-test-user", async (req, res) => {
   try {
     const user = await User.create({
