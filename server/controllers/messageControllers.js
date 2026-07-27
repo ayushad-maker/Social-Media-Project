@@ -1,6 +1,6 @@
 import fs from "fs";
-import imageKit from "../config/imagekit";
-import Message from "../models/Message";
+import imageKit from "../config/imagekit.js";
+import Message from "../models/Message.js";
 //create an empty object to store server side event connections
 const connections = {};
 
@@ -81,3 +81,44 @@ export const sendMessage = async (req, res) => {
     res.json({ success: false, status: 400, message: error.message });
   }
 };
+
+export const getChatMessages = async (req, res) => {
+  try {
+    const { userId } = req.auth();
+    const { to_user_id } = req.body;
+
+    const messages = await Message.find({
+      $or: [
+        { from_user_id: userId, to_user_id },
+        { to_user_id: userId, from_user_id: to_user_id },
+      ],
+    }).sort({ created_at: -1 });
+
+    //mark message as seen
+
+    await Message.updateMany(
+      { from_user_id: to_user_id, to_user_id: userId },
+      { seen: true },
+    );
+
+    res.json({ success: true, messages });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export const getRecentMessages = async(req,res)=>{
+      
+  try {
+    const {userId} = req.auth();
+    const message = await Message.find({to_user_id:userId}).populate("from_user_id to_user_id").sorr({createdAt:-1});
+  
+    res.json({success:true,message})
+  } catch (error) {
+    res.json({success:false,message:error.message});
+  }
+
+}
+
+
