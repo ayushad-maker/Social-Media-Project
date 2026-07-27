@@ -1,5 +1,5 @@
 import fs from "fs";
-import imageKit from "../config/imagekit.js";
+import imageKit from "../config/imageKit.js";
 import Message from "../models/Message.js";
 //create an empty object to store server side event connections
 const connections = {};
@@ -10,10 +10,10 @@ export const sseController = (req, res) => {
   console.log("New client connected: ", userId);
 
   //set SSE headers
-  res.setHeaders("Content-type", "text/event-stream");
-  res.setHeaders("Cache-Control", "no-cache");
-  res.setHeaders("Connection", "keep-alive");
-  res.setHeaders("Access-Control-Allow-Origin", "*");
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("Access-Control-Allow-Origin", "*");
 
   //Add the Client's response object to the connections object
   connections[userId] = res;
@@ -22,7 +22,7 @@ export const sseController = (req, res) => {
   res.write("log: Connected to SSE stream\n\n");
 
   //Handle client disconnection
-  req.on("Close", () => {
+  req.on("close", () => {
     //Remove the client's response object from the connections array
     delete connections[userId];
     console.log("Client disconnected");
@@ -35,7 +35,7 @@ export const sendMessage = async (req, res) => {
     const { to_user_id, text } = req.body;
     const image = req.file;
 
-    const media_url = "";
+    let media_url = "";
 
     const media_type = image ? "image" : "text";
 
@@ -59,7 +59,7 @@ export const sendMessage = async (req, res) => {
     const message = await Message.create({
       from_user_id: userId,
       to_user_id,
-      message_type,
+      media_type,
       text,
       media_url,
     });
@@ -108,17 +108,15 @@ export const getChatMessages = async (req, res) => {
   }
 };
 
-export const getRecentMessages = async(req,res)=>{
-      
+export const getRecentMessages = async (req, res) => {
   try {
-    const {userId} = req.auth();
-    const message = await Message.find({to_user_id:userId}).populate("from_user_id to_user_id").sorr({createdAt:-1});
-  
-    res.json({success:true,message})
+    const { userId } = req.auth();
+    const message = await Message.find({ to_user_id: userId })
+      .populate("from_user_id to_user_id")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, message });
   } catch (error) {
-    res.json({success:false,message:error.message});
+    res.json({ success: false, message: error.message });
   }
-
-}
-
-
+};
