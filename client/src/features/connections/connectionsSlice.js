@@ -12,7 +12,6 @@ const connectionsSlice = createSlice({
     name :'connections',
     initialState,
     reducers :{
-
     }
 })
 

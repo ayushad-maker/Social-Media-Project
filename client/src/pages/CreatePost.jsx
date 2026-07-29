@@ -3,19 +3,18 @@ import { useState } from "react";
 import { Image } from "lucide-react";
 import { X } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [image, setImage] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const user = dummyUserData;
+  const user = useSelector((state) => state.user.value);
 
   const handleSubmit = async (e) => {
-  
-
     // Create a new FormData object to hold the post data
-  }
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-50 to-white ">
@@ -92,11 +91,17 @@ const CreatePost = () => {
               onChange={(e) => setImage([...image, ...e.target.files])}
             />
 
-            <button disabled = {loading} onClick={()=>toast.promise(handleSubmit(), {
-              pending: "Creating post...",
-              success: "Post created successfully!",
-              error: "Error creating post."
-            })} className="text-sm bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 active:scale-95 transition text-white font-medium px-8 py-2 rounded-md cursor-pointer">
+            <button
+              disabled={loading}
+              onClick={() =>
+                toast.promise(handleSubmit(), {
+                  pending: "Creating post...",
+                  success: "Post created successfully!",
+                  error: "Error creating post.",
+                })
+              }
+              className="text-sm bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 active:scale-95 transition text-white font-medium px-8 py-2 rounded-md cursor-pointer"
+            >
               Publish Post
             </button>
           </div>

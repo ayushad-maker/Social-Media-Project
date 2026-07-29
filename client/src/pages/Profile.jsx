@@ -1,33 +1,58 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { dummyPostsData, dummyUserData } from "../assets/assets";
 import Loading from "../components/Loading";
 import UserProfile from "../components/UserProfile";
 import PostCard from "../components/PostCard";
 import { Link } from "react-router-dom";
 import moment from "moment";
 import ProfileModal from "../components/ProfileModal";
+import {useSelector} from "react-redux"
+import toast from "react-hot-toast"
+import {useAuth} from "@clerk/react"
+import api from "../api/axios";
 
 const Profile = () => {
+  const currentUser = useSelector((state) => state.user.value);
+  const { getToken } = useAuth();
   const { profileId } = useParams();
   const [users, setUsers] = useState(null);
   const [activeTab, setActiveTab] = useState([]);
   const [posts, setPosts] = useState("posts");
   const [showedit, setShowEdit] = useState(false);
 
-  const fetchUser = async () => {
-    setUsers(dummyUserData);
-    setPosts(dummyPostsData);
+  const fetchUser = async (profileId) => {
+    const token = await getToken();
+    try {
+      const {data} = await api.post(
+        "/api/user/profiles",
+        { profileId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (data.success) {
+        setUsers(data.profile);
+        setPosts(data.posts);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error){
+       toast.error(error.message)
+    }
   };
 
   useEffect(() => {
-    fetchUser();
-  }, []);
+    if (profileId) {
+      fetchUser(profileId);
+    } else {
+      fetchUser(currentUser._id);
+    }
+  }, [profileId, currentUser]);
 
   return users ? (
     <div className="relative h-full overflow-y-scroll bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto">
-
         {/* Profile Photo */}
         <div className="bg-white rounded-2xl shadow overflow-hidden ">
           {/* Cover Photo */}
@@ -41,7 +66,12 @@ const Profile = () => {
             )}
           </div>
           {/* User Info */}
-          <UserProfile users={users} posts={posts} profileId={profileId} setShowEdit={setShowEdit}/>
+          <UserProfile
+            users={users}
+            posts={posts}
+            profileId={profileId}
+            setShowEdit={setShowEdit}
+          />
 
           {/* Tabs */}
           <div className="mt-6">
@@ -98,7 +128,7 @@ const Profile = () => {
           )}
         </div>
       </div>
-      {showedit && <ProfileModal user={users} setShowEdit={setShowEdit}/>}
+      {showedit && <ProfileModal user={users} setShowEdit={setShowEdit} />}
     </div>
   ) : (
     <Loading />
