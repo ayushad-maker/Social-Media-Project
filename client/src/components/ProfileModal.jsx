@@ -7,7 +7,7 @@ import { updateUser } from "../features/user/userSlice";
 import { getToken, useAuth } from "@clerk/react";
 
 const ProfileModal = ({ setShowEdit }) => {
-  const getToken = useAuth();
+  const {getToken} = useAuth();
   const dispatch = useDispatch();
   const user = dummyUserData;
   const [editForm, setEditForm] = useState({
@@ -34,7 +34,7 @@ const ProfileModal = ({ setShowEdit }) => {
       profile_picture && userData.append("profile", profile_picture);
       cover_photo && userData.append("cover", cover_photo);
   
-      const { token } = await getToken();
+      const token = await getToken();
   
       dispatch(updateUser({ userData, token }));
       setEditForm(false);

@@ -92,7 +92,7 @@ const Profile = () => {
           {activeTab === "posts" && (
             <div className="mt-6 flex flex-col items-center gap-6">
               {posts.map((post) => (
-                <PostCard key={post} post={post} />
+                <PostCard key={post._id} post={post} />
               ))}
             </div>
           )}

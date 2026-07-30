@@ -1,19 +1,65 @@
-import { dummyUserData } from "../assets/assets";
 import { useState } from "react";
 import { Image } from "lucide-react";
 import { X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
+import { useAuth } from "@clerk/react";
+import api from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const CreatePost = () => {
+  const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [content, setContent] = useState("");
   const [image, setImage] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const user = useSelector((state) => state.user.value);
 
-  const handleSubmit = async (e) => {
-    // Create a new FormData object to hold the post data
+  const handleSubmit = async () => {
+    if (!image.length && !content.trim()) {
+      return toast.error("Please add some text or at least one image.");
+    }
+
+    setLoading(true);
+
+    const postType =
+      image.length && content
+        ? "text_with_image"
+        : image.length
+          ? "image"
+          : "text";
+
+    try {
+      const token = await getToken();
+
+      const formData = new FormData();
+
+      formData.append("content", content);
+      formData.append("post_type", postType);
+
+      image.forEach((img) => {
+        formData.append("images", img);
+      });
+
+      const { data } = await api.post("/api/post/add", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      toast.success("Post created successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -85,7 +131,7 @@ const CreatePost = () => {
             <input
               type="file"
               id="images"
-              accept="image/"
+              accept="image/*"
               hidden
               multiple
               onChange={(e) => setImage([...image, ...e.target.files])}
@@ -93,13 +139,7 @@ const CreatePost = () => {
 
             <button
               disabled={loading}
-              onClick={() =>
-                toast.promise(handleSubmit(), {
-                  pending: "Creating post...",
-                  success: "Post created successfully!",
-                  error: "Error creating post.",
-                })
-              }
+              onClick={handleSubmit}
               className="text-sm bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 active:scale-95 transition text-white font-medium px-8 py-2 rounded-md cursor-pointer"
             >
               Publish Post

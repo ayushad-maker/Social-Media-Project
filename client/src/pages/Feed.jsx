@@ -4,13 +4,32 @@ import { assets, dummyPostsData } from "../assets/assets";
 import StoriesBar from "../components/StoriesBar";
 import PostCard from "../components/PostCard";
 import RecentMessages from "../components/RecentMessages";
+import { useAuth } from "@clerk/react";
+import toast from "react-hot-toast";
+import api from "../api/axios";
 
 const Feed = () => {
+  const { getToken } = useAuth();
   const [feedData, setFeedData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFeeds = async () => {
-    setFeedData(dummyPostsData);
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const { data } = await api.get("/api/post/feed", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data.success) {
+        toast.success(data.message);
+        setFeedData(data.posts);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
     setLoading(false);
   };
 
@@ -40,9 +59,12 @@ const Feed = () => {
             className="w-75 h-50 rounded-md "
           />
           <p className="text-slate-600">Email Marketing</p>
-          <p>SuperCharge your marketing with a powerful,easy-to-use platform for results.</p>
+          <p>
+            SuperCharge your marketing with a powerful,easy-to-use platform for
+            results.
+          </p>
         </div>
-         <RecentMessages />
+        <RecentMessages />
       </div>
     </div>
   ) : (
