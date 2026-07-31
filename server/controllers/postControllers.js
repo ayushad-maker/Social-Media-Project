@@ -2,7 +2,6 @@ import imageKit from "../config/imageKit.js";
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 
-
 export const addPost = async (req, res) => {
   try {
     const { userId } = req.auth();
@@ -75,6 +74,13 @@ export const likePost = async (req, res) => {
 
     const post = await Post.findById(postId);
 
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
     if (post.likes_count.includes(userId)) {
       post.likes_count = post.likes_count.filter((user) => user != userId);
       await post.save();
@@ -86,6 +92,9 @@ export const likePost = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    return res.json({ status: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

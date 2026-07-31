@@ -4,15 +4,33 @@ import { Plus } from "lucide-react";
 import moment from "moment";
 import StoryModel from "./StoryModel.jsx";
 import StoryViewer from "./StoryViewer.jsx";
+import { useAuth } from "@clerk/react";
+import api from "../api/axios.js";
+import toast from "react-hot-toast";
 
 const StoriesBar = () => {
+  const { getToken } = useAuth();
   const [stories, Setstories] = useState([]);
-  const [showModel,setShowModel] = useState(false);
-  const [viewStory,setViewStory] = useState(null);
-
+  const [showModel, setShowModel] = useState(false);
+  const [viewStory, setViewStory] = useState(null);
 
   const fetchStroies = async () => {
-    Setstories(dummyStoriesData);
+    try {
+      const token = await getToken();
+      const { data } = await api.get("/api/stories/get", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        toast.success(data.success);
+        Setstories(data.stories);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
   };
 
   useEffect(() => {
@@ -22,7 +40,10 @@ const StoriesBar = () => {
     <div className="w-screen sm:w-[calc(100vw-240px)] lg:max-w-2xl no-scrollbar overflow-x-auto px-4 mt-10">
       <div className="flex gap-4 pb-5">
         {/*  Add Story Card*/}
-        <div onClick={()=>setShowModel(true)} className="rounded-lg shadow-sm min-w-30 max-w-30 max-h-40 aspect-3/4 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-dashed border-indigo-300 bg-linear-to-b from-indigo-50 to-white">
+        <div
+          onClick={() => setShowModel(true)}
+          className="rounded-lg shadow-sm min-w-30 max-w-30 max-h-40 aspect-3/4 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-dashed border-indigo-300 bg-linear-to-b from-indigo-50 to-white"
+        >
           <div className="h-full flex flex-col items-center justify-center p-4">
             <div className="size-10 bg-indigo-500 rounded-full flex items-center justify-center mb-3">
               <Plus className="w-5 h-5 text-white" />
@@ -36,7 +57,7 @@ const StoriesBar = () => {
         {stories.map((story, index) => (
           <div
             key={index}
-            onClick={()=>setViewStory(story)}
+            onClick={() => setViewStory(story)}
             className={`relative rounded-lg shadow min-w-30 max-w-30 max-h-40 cursor-pointer hover:shadow-lg transition-all duration-200 bg-linear-to-b from-indigo-500 to-purple-600 hover:from-indigo-700 hover:to-purple-800 active-scale-95`}
           >
             <img
@@ -52,37 +73,35 @@ const StoriesBar = () => {
             </p>
             {story.media_type !== "text" && (
               <div className="absolute inset-0 z-1 rounded-lg bg-black overflow-hidden">
-                {
-                    story.media_type === "image" ? (
-                        <img
-                          src={story.media_url}
-                          alt=""
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 opacity-90 hover:opacity-100"
-                        />
-                    ) : (
-                        <video
-                          src={story.media_url}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 opacity-90 hover:opacity-100"
-                          autoPlay
-                          loop
-                          muted
-                        />
-                    )
-                }
+                {story.media_type === "image" ? (
+                  <img
+                    src={story.media_url}
+                    alt=""
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 opacity-90 hover:opacity-100"
+                  />
+                ) : (
+                  <video
+                    src={story.media_url}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 opacity-90 hover:opacity-100"
+                    autoPlay
+                    loop
+                    muted
+                  />
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
-     
+
       {/* Add Story Model */}
-      {showModel && <StoryModel setShowModel={setShowModel} fetchStories={fetchStroies} />}
+      {showModel && (
+        <StoryModel setShowModel={setShowModel} fetchStories={fetchStroies} />
+      )}
 
-      {viewStory && <StoryViewer viewStory={viewStory} setViewStory = {setViewStory} />}
-
-
-    
-
+      {viewStory && (
+        <StoryViewer viewStory={viewStory} setViewStory={setViewStory} />
+      )}
     </div>
   );
 };

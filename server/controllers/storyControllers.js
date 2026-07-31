@@ -2,21 +2,24 @@ import fs from "fs";
 import imageKit from "../config/imageKit.js";
 import Story from "../models/Story.js";
 import User from "../models/User.js";
+import { inngest } from "../inngest/index.js";
+
 
 export const addUserStory = async (req, res) => {
   try {
     const { userId } = req.auth();
     const { content, media_type, background_color } = req.body;
     const media = req.file;
-    let media_url = " ";
+    let media_url = "";
 
-    //upload media to imagekit
-    if (media.type === "image" || media.type === "video") {
+    if (media) {
       const fileBuffer = fs.readFileSync(media.path);
+
       const response = await imageKit.upload({
         file: fileBuffer,
         fileName: media.originalname,
       });
+
       media_url = response.url;
     }
 

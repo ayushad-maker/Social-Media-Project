@@ -7,21 +7,72 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {
-  dummyConnectionsData as connections,
-  dummyFollowersData as followers,
-  dummyFollowingData as following,
-  dummyPendingConnectionsData as pendingConnections,
-} from "../assets/assets";
+import { useSelector, useDispatch } from "react-redux";
+import { useAuth } from "@clerk/react";
+import { useEffect } from "react";
+import { fetchConnections } from "../features/connections/connectionsSlice";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const Connections = () => {
+  const [connections, pendingConnections, followers, following] = useSelector(
+    (state) => state.connections,
+  );
+  const { getToken } = useAuth();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const dataArray = [
     { label: "followers", value: followers, icon: Users },
     { label: "following", value: following, icon: UserCheck },
     { label: "Pending", value: pendingConnections, icon: UserRoundPen },
     { label: "Connections", value: connections, icon: UserPlus },
   ];
+
+  const handleUnfollow = async (userId) => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/unfollow",
+        { userId },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        dispatch(fetchConnections(await getToken()));
+      } else {
+        toast.error(error.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+  const acceptConnections = async (userId) => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/accept",
+        { userId },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        dispatch(fetchConnections(await getToken()));
+      } else {
+        toast.error(error.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    getToken.then((token) => dispatch(fetchConnections(token)));
+  }, []);
 
   const [currentTab, setCurrentTab] = useState("followers");
   return (
@@ -103,24 +154,29 @@ const Connections = () => {
                       </button>
                     )}
                     {currentTab === "Pending" && (
-                      <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer">
+                      <button
+                        onClick={() => {
+                          acceptConnections(user._id);
+                        }}
+                        className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer"
+                      >
                         Accept
                       </button>
                     )}
                     {currentTab === "following" && (
-                      <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer">
+                      <button
+                        onClick={() => handleUnfollow(user._id)}
+                        className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer"
+                      >
                         Unfollow
                       </button>
                     )}
-                    {
-                      currentTab === "Connections" && (
-                        <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer flex items-center justify-center gap-2">
-                          <MessageSquare/>
-                          Message
-                        </button>
-                      ) 
-                    }
-
+                    {currentTab === "Connections" && (
+                      <button className="w-full p-2 text-sm rounded  bg-linear-to-r from-indigo-500 to-purple-200  bg-slate-100 hover:to-purple-400 text-black active:scale-95 transition cursor-pointer flex items-center justify-center gap-2">
+                        <MessageSquare />
+                        Message
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
