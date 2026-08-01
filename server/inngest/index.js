@@ -32,25 +32,22 @@ const syncUserCreation = inngest.createFunction(
 
     console.log("STEP 2");
 
-    const email = email_addresses[0].email_address;
+    const email =
+      event.data.email_addresses?.[0]?.email_address || "unknown@example.com";
 
-    let username = clerkUsername || email.split("@")[0];
+    let username =
+      clerkUsername || email.split("@")[0] || `user_${id.slice(-6)}`;
 
-    console.log("STEP 3");
-
-    const existingUser = await User.findOne({ username });
-
-    console.log("STEP 4");
-
-    if (existingUser) {
-      username += Math.floor(Math.random() * 10000);
-    }
-
-    // Fallback if Clerk doesn't provide a name
     const fullName =
-      `${first_name ?? ""} ${last_name ?? ""}`.trim() || username;
+      `${first_name || ""} ${last_name || ""}`.trim() ||
+      username ||
+      "PingUp User";
 
-    console.log("STEP 5");
+    console.log({
+      email,
+      username,
+      fullName,
+    });
 
     await User.create({
       _id: id,
