@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     _id: { type: String, required: true },
     email: { type: String, required: true },
-    full_name: { type: String, required: true },
+    full_name: { type: String, required: true, default: "PingUp User" },
     username: { type: String, required: true },
     bio: { type: String, default: "Hey there!, I am using Pingup" },
     profile_picture: { type: String, default: "" },
@@ -20,4 +20,3 @@ const userSchema = new mongoose.Schema(
 const User = mongoose.model("User", userSchema);
 
 export default User;
- 

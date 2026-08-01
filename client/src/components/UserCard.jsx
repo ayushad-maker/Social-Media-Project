@@ -1,12 +1,61 @@
+import { useAuth } from "@clerk/react";
 import { dummyUserData } from "../assets/assets";
 import { MapPin, MessageCircle, Plus, UserPlus } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import api from "../api/axios";
+import { fetchUser } from "../features/user/userSlice";
 
 const UserCard = ({ user }) => {
-  const currentUser = dummyUserData;
+  const currentUser = useSelector((state) => state.user.value);
+  const { getToken } = useAuth();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleFollow = async () => {};
+  const handleFollow = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/follow",
+        { id: user._id },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (data.success) {
+        toast.success(data.message);
+        dispatch(fetchUser(token));
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
 
-  const handleConnectionRequest = async () => {};
+  const handleConnectionRequest = async () => {
+    
+     if(currentUser.connections.includes(user._id)){
+      return navigate('/messages' + user._id);
+     }
+
+    try {
+      const token = await getToken();
+      const { data } = await api.post(
+        "/api/user/connect",
+        { id: user._id },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (data.success) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
 
   return (
     <>

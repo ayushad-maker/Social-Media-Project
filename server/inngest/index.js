@@ -21,14 +21,20 @@ const syncUserCreation = inngest.createFunction(
   async ({ event }) => {
     console.log("STEP 1");
 
-    const { id, first_name, last_name, email_addresses, image_url } =
-      event.data;
+    const {
+      id,
+      first_name,
+      last_name,
+      email_addresses,
+      image_url,
+      username: clerkUsername,
+    } = event.data;
 
     console.log("STEP 2");
 
     const email = email_addresses[0].email_address;
 
-    let username = email.split("@")[0];
+    let username = clerkUsername || email.split("@")[0];
 
     console.log("STEP 3");
 
@@ -40,12 +46,16 @@ const syncUserCreation = inngest.createFunction(
       username += Math.floor(Math.random() * 10000);
     }
 
+    // Fallback if Clerk doesn't provide a name
+    const fullName =
+      `${first_name ?? ""} ${last_name ?? ""}`.trim() || username;
+
     console.log("STEP 5");
 
     await User.create({
       _id: id,
       email,
-      full_name: `${first_name ?? ""} ${last_name ?? ""}`.trim(),
+      full_name: fullName,
       profile_picture: image_url,
       username,
     });

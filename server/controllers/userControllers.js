@@ -258,9 +258,9 @@ export const sendConnectionsRequest = async (req, res) => {
       });
 
       await inngest.send({
-        name:"app/connection-request",
-        data : {connectionId : newConnection._id}
-      })
+        name: "app/connection-request",
+        data: { connectionId: newConnection._id },
+      });
 
       return res.json({
         success: true,
@@ -286,30 +286,37 @@ export const getUserConnections = async (req, res) => {
   try {
     const { userId } = req.auth();
 
-    const user = await Connection.findById(userId).populate(
+    const user = await User.findById(userId).populate(
       "connections followers following",
     );
 
-    const connections = user.connections;
-    const followers = user.followers;
-    const following = user.following;
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     const pendingConnections = (
-      await Connection.find({ to_user_id: userId, status: "pending" }).populate(
-        "from_user_id",
-      )
+      await Connection.find({
+        to_user_id: userId,
+        status: "pending",
+      }).populate("from_user_id")
     ).map((connection) => connection.from_user_id);
 
     res.json({
       success: true,
-      connections,
-      followers,
-      following,
+      connections: user.connections,
+      followers: user.followers,
+      following: user.following,
       pendingConnections,
     });
   } catch (error) {
     console.log(error);
-    return res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -373,5 +380,3 @@ export const getUserProfile = async (req, res) => {
     return res.json({ success: false, status: 400, message: error.message });
   }
 };
-
-
