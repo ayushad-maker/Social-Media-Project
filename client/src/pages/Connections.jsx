@@ -15,8 +15,9 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 
 const Connections = () => {
-  const {connections, pendingConnections, followers, following} = useSelector(
-    (state) => state.connections);
+  const { connections, pendingConnections, followers, following } = useSelector(
+    (state) => state.connections,
+  );
   const { getToken } = useAuth();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -51,9 +52,10 @@ const Connections = () => {
   const acceptConnections = async (userId) => {
     try {
       const token = await getToken();
+      console.log("Accepting request from:", userId);
       const { data } = await api.post(
         "/api/user/accept",
-        { userId },
+        { id:userId },
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
@@ -61,7 +63,7 @@ const Connections = () => {
         toast.success(data.message);
         dispatch(fetchConnections(await getToken()));
       } else {
-        toast.error(error.message);
+        toast.error(data.message);
       }
     } catch (error) {
       console.log(error);

@@ -31,8 +31,8 @@ userRouter.post(
 userRouter.post("/discover", protect, discoveryUsers);
 userRouter.get("/connections", protect, getUserConnections);
 userRouter.post("/connect", protect, sendConnectionsRequest);
-userRouter.post('"/accept', protect, acceptConnectionRequest);
-userRouter.post("/profiles",getUserProfile);
-userRouter.get("/recent-messages",protect,getRecentMessages);
+userRouter.post("/accept", protect, acceptConnectionRequest);
+userRouter.post("/profiles", getUserProfile);
+userRouter.get("/recent-messages", protect, getRecentMessages);
 
 export default userRouter;

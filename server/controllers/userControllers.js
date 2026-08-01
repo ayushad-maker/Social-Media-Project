@@ -3,6 +3,8 @@ import User from "../models/User.js";
 import imageKit from "../config/imageKit.js";
 import Connection from "../models/Connections.js";
 import Post from "../models/Post.js";
+import { inngest } from "../inngest/index.js";
+
 
 //get User data
 export const getUserData = async (req, res) => {
@@ -244,7 +246,7 @@ export const sendConnectionsRequest = async (req, res) => {
 
     //check if user is already exits or not
 
-    const connection = await Connection.findById({
+    const connection = await Connection.findOne({
       $or: [
         { from_user_id: userId, to_user_id: id },
         { from_user_id: id, to_user_id: userId },
@@ -325,33 +327,40 @@ export const acceptConnectionRequest = async (req, res) => {
     const { userId } = req.auth();
     const { id } = req.body;
 
-    const connection = await User.findById({
-      from_user_id: userId,
-      to_user_id: id,
+    const connection = await Connection.findOne({
+      from_user_id: id,
+      to_user_id: userId,
     });
 
     if (!connection) {
-      return res.json({ success: false, message: "no connection is found!." });
+      return res.json({
+        success: false,
+        message: "No connection request found.",
+      });
     }
 
-    const user = await User.findById({ userId });
-    user.connections.push(id);
-    user.save();
+    const user = await User.findById(userId);
+    const toUser = await User.findById(id);
 
-    const toUser = await User.findById({ id });
+    user.connections.push(id);
     toUser.connections.push(userId);
-    toUser.save();
+
+    await user.save();
+    await toUser.save();
 
     connection.status = "accepted";
-    connection.save();
+    await connection.save();
 
     return res.json({
       success: true,
-      message: "connection accepted successfully.",
+      message: "Connection accepted successfully.",
     });
   } catch (error) {
     console.log(error);
-    return res.json({ success: false, message: error.message });
+    return res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
