@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { dummyMessagesData, dummyUserData } from "../assets/assets";
 import { ImageIcon, SendHorizonal } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -47,6 +46,8 @@ const ChatBox = () => {
       const { data } = await api.post("/api/message/send", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      console.log("API Response:", data);
       if (data.success) {
         setText("");
         setImage(null);
@@ -68,13 +69,17 @@ const ChatBox = () => {
   }, [userId]);
 
   useEffect(() => {
+    console.log("Messages:", messages);
+  }, [messages]);
+
+  useEffect(() => {
     if (connections.length > 0) {
       const user = connections.find(
         (connections) => connections._id === userId,
       );
       setUser(user);
     }
-  }, [connections,userId]);
+  }, [connections, userId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
@@ -148,7 +153,10 @@ const ChatBox = () => {
               id="image"
               accept="image/*"
               hidden
-              onChange={(e) => setImage(e.target.files[0])}
+              onChange={(e) => {
+                console.log(e.target.files[0]);
+                setImage(e.target.files[0]);
+              }}
             />
           </label>
 

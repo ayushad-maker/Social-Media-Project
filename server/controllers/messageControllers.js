@@ -1,4 +1,3 @@
-import fs from "fs";
 import imageKit from "../config/imageKit.js";
 import Message from "../models/Message.js";
 //create an empty object to store server side event connections
@@ -7,7 +6,6 @@ const connections = {};
 // Controller function for the SSE endpoint
 export const sseController = (req, res) => {
   const { userId } = req.params;
-  console.log("New client connected: ", userId);
 
   //set SSE headers
   res.setHeader("Content-Type", "text/event-stream");
@@ -25,7 +23,6 @@ export const sseController = (req, res) => {
   req.on("close", () => {
     //Remove the client's response object from the connections array
     delete connections[userId];
-    console.log("Client disconnected");
   });
 };
 
@@ -37,12 +34,11 @@ export const sendMessage = async (req, res) => {
 
     let media_url = "";
 
-    const media_type = image ? "image" : "text";
+    const message_type = image ? "image" : "text";
 
-    if (media_type === "image") {
-      const fileBuffer = fs.readFileSync(image.path);
+    if (message_type === "image") {
       const response = await imageKit.upload({
-        file: fileBuffer,
+        file: image.buffer,
         fileName: image.originalname,
       });
 
@@ -59,7 +55,7 @@ export const sendMessage = async (req, res) => {
     const message = await Message.create({
       from_user_id: userId,
       to_user_id,
-      media_type,
+      message_type,
       text,
       media_url,
     });
@@ -92,7 +88,7 @@ export const getChatMessages = async (req, res) => {
         { from_user_id: userId, to_user_id },
         { to_user_id: userId, from_user_id: to_user_id },
       ],
-    }).sort({ created_at: -1 });
+    }).sort({ createdAt: -1 });
 
     //mark message as seen
 
@@ -111,12 +107,20 @@ export const getChatMessages = async (req, res) => {
 export const getRecentMessages = async (req, res) => {
   try {
     const { userId } = req.auth();
-    const message = await Message.find({ to_user_id: userId })
-      .populate("from_user_id to_user_id")
-      .sort({ createdAt: -1 });
 
-    res.json({ success: true, message });
+    const messages = await Message.find({
+      to_user_id: userId,
+    }).populate("from_user_id to_user_id");
+
+    res.json({
+      success: true,
+      messages,
+    });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
